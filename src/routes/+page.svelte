@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { createClient } from "@supabase/supabase-js";
-  import type { IDatabase, IProduct } from "src/types";
-  const supabaseUrl = "https://qzwcxxccgeimihfsucky.supabase.co";
-  const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-  const client = createClient<IDatabase>(supabaseUrl, supabaseKey!, {
-    realtime: { params: { eventsPerSecond: 10 } },
-  });
+  import { supaBase, user } from "../stores/supabase";
+
+  import type { IProduct } from "src/types";
   let product: IProduct = { name: "", description: "", stock: 0, price: 0 };
   let products: IProduct[] = [];
 
-  client
+  $supaBase
     .channel("public:products")
     .on<IProduct>(
       "postgres_changes",
@@ -23,50 +19,52 @@
     .subscribe();
 
   (async () => {
-    const { data } = await client
+    const { data } = await $supaBase
       .from<"products", IProduct>("products")
       .select<"*", IProduct>("*");
     products = data ?? [];
   })();
   async function insertProduct() {
-    await client.from("products").insert(product);
+    await $supaBase.from("products").insert(product);
   }
 </script>
 
 <h1>Supabase</h1>
 
-<div class="col gap-1 align-start">
-  <label>
-    <span>Name</span>
-    <input type="text" placeholder="Name" bind:value={product.name} />
-  </label>
-  <label>
-    <span>Description</span>
-    <input
-      type="text"
-      placeholder="Description"
-      bind:value={product.description}
-    />
-  </label>
-  <label>
-    <span>Price</span>
-    <input type="number" placeholder="Price" bind:value={product.price} />
-  </label>
-  <label>
-    <span>Stock</span>
-    <input type="number" placeholder="Stock" bind:value={product.stock} />
-  </label>
-  <button on:click={insertProduct}>Create Prodcut</button>
-  <h2>Real time listener</h2>
-  <div class="grid">
-    {#each products as prod (prod.id)}
-      <div class="card">
-        <h2>{prod.name}</h2>
-        <p>{prod.description}</p>
-        <p>$ {prod.price}</p>
-      </div>
-    {/each}
+{#if $user}
+  <div class="col gap-1 align-start">
+    <label>
+      <span>Name</span>
+      <input type="text" placeholder="Name" bind:value={product.name} />
+    </label>
+    <label>
+      <span>Description</span>
+      <input
+        type="text"
+        placeholder="Description"
+        bind:value={product.description}
+      />
+    </label>
+    <label>
+      <span>Price</span>
+      <input type="number" placeholder="Price" bind:value={product.price} />
+    </label>
+    <label>
+      <span>Stock</span>
+      <input type="number" placeholder="Stock" bind:value={product.stock} />
+    </label>
+    <button on:click={insertProduct}>Create Prodcut</button>
   </div>
+{/if}
+<h2>Real time listener</h2>
+<div class="grid">
+  {#each products as prod (prod.id)}
+    <div class="card">
+      <h2>{prod.name}</h2>
+      <p>{prod.description}</p>
+      <p>$ {prod.price}</p>
+    </div>
+  {/each}
 </div>
 
 <style>
