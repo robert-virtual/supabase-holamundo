@@ -16,7 +16,7 @@
       { event: "INSERT", schema: "public", table: "products" },
       (payload) => {
         if (Object.keys(payload.new).length) {
-          products = [...products, (payload.new as IProduct)];
+          products = [...products, payload.new as IProduct];
         }
       }
     )
@@ -36,15 +36,28 @@
 <h1>Supabase</h1>
 
 <div class="col gap-1 align-start">
-  <input type="text" placeholder="Name" bind:value={product.name} />
-  <input
-    type="text"
-    placeholder="Description"
-    bind:value={product.description}
-  />
-  <input type="number" placeholder="Price" bind:value={product.price} />
-  <input type="number" placeholder="Stock" bind:value={product.stock} />
+  <label>
+    <span>Name</span>
+    <input type="text" placeholder="Name" bind:value={product.name} />
+  </label>
+  <label>
+    <span>Description</span>
+    <input
+      type="text"
+      placeholder="Description"
+      bind:value={product.description}
+    />
+  </label>
+  <label>
+    <span>Price</span>
+    <input type="number" placeholder="Price" bind:value={product.price} />
+  </label>
+  <label>
+    <span>Stock</span>
+    <input type="number" placeholder="Stock" bind:value={product.stock} />
+  </label>
   <button on:click={insertProduct}>Create Prodcut</button>
+  <h2>Real time listener</h2>
   <div class="grid">
     {#each products as prod (prod.id)}
       <div class="card">
